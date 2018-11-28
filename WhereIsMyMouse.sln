@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2048
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhereIsMyMouse", "WhereIsMyMouse\WhereIsMyMouse.csproj", "{369A8EE3-063A-416C-AD28-85E775D6586C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{369A8EE3-063A-416C-AD28-85E775D6586C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{369A8EE3-063A-416C-AD28-85E775D6586C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{369A8EE3-063A-416C-AD28-85E775D6586C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{369A8EE3-063A-416C-AD28-85E775D6586C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {20C5BBFD-1A27-498E-819D-03C5FC9762F2}
+	EndGlobalSection
+EndGlobal
