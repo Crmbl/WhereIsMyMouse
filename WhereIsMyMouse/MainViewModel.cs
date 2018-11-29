@@ -62,6 +62,12 @@ namespace WhereIsMyMouse
             {
                 if (_isEnabled == value) return;
                 _isEnabled = value;
+
+                if (value)
+                    MouseUtil.Start();
+                else
+                    MouseUtil.Stop();
+
                 NotifyPropertyChanged("IsEnabled");
             }
         }
@@ -138,8 +144,6 @@ namespace WhereIsMyMouse
             ToggleEnableLabel = "Disable";
             ExitCommand = new ActionCommand(KillApp);
             ToggleEnableCommand = new ActionCommand(ToggleEnableMethod);
-
-            MouseUtil.Start();
             MouseUtil.MouseAction += MovingMouse;
         }
 
@@ -170,8 +174,7 @@ namespace WhereIsMyMouse
         /// </summary>
         private void MovingMouse(object sender, System.EventArgs e)
         {
-            if (IsEnabled)
-                MouseUtil.DoStuff();
+            MouseUtil.DoStuff();
         }
 
         #endregion //Methods
