@@ -144,7 +144,7 @@ namespace WhereIsMyMouse
             ToggleEnableLabel = "Disable";
             ExitCommand = new ActionCommand(KillApp);
             ToggleEnableCommand = new ActionCommand(ToggleEnableMethod);
-            MouseUtil.MouseAction += MovingMouse;
+            //MouseUtil.MouseAction += MovingMouse;
         }
 
         #endregion //Constructors

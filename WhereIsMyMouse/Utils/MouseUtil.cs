@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -54,6 +55,8 @@ namespace WhereIsMyMouse.Utils
 
         private static bool _isFirstMove;
 
+        private static List<MouseMoves> _mouseMoves;
+
         #endregion //Properties
 
         #region Methods
@@ -63,8 +66,9 @@ namespace WhereIsMyMouse.Utils
         /// </summary>
         public static void Start()
         {
+            _mouseMoves = new List<MouseMoves>();
             _isFirstMove = true;
-            _timer = new Timer { Interval = 275 };
+            _timer = new Timer { Interval = 350 };
             _timer.Tick += TimerOnTick;
 
             using (Process curProcess = Process.GetCurrentProcess())
@@ -87,33 +91,35 @@ namespace WhereIsMyMouse.Utils
         /// </summary>
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && MouseMessages.WM_MOUSEMOVE == (MouseMessages)wParam && _isFirstMove)
-            {
-                _isFirstMove = false;
-                Console.WriteLine("Hook");
+            if (nCode < 0 || (MouseMessages) wParam != MouseMessages.WM_MOUSEMOVE || !_isFirstMove)
+                return CallNextHookEx(_hookId, nCode, wParam, lParam);
 
-                _timer.Stop();
-                _timer.Start();
+            _isFirstMove = false;
+            //Console.WriteLine("Hook");
 
-                Point endMousePosition = new Point();
-                if (!_mousePosition.Equals(new Point()))
-                    endMousePosition = _mousePosition;
-                _mousePosition = ((MSLLHook)Marshal.PtrToStructure(lParam, typeof(MSLLHook))).Point;
+            _timer.Stop();
+            _timer.Start();
 
-                //Console.WriteLine("begin X " + _mousePosition.X);
-                //Console.WriteLine("end X " + endMousePosition.X);
-                //Console.WriteLine("///////////////////////////////////////");
+            var prevMousePosition = new Point();
+            if (!_mousePosition.Equals(new Point()))
+                prevMousePosition = _mousePosition;
 
-                var test = endMousePosition.X - _mousePosition.X;
-                if (test >= 100)
-                    Console.WriteLine("GEUT ALICE");
-                else if (test <= -100)
-                    Console.WriteLine("GEUT PATRICK");
-                else
-                    Console.WriteLine("Nope");
+            //var prevMousePosition = _mousePosition;
+            _mousePosition = ((MSLLHook)Marshal.PtrToStructure(lParam, typeof(MSLLHook))).Point;
 
-                MouseAction(null, new EventArgs());
-            }
+            Console.WriteLine("///////////////////////////////////////");
+            Console.WriteLine("X " + _mousePosition.X);
+            //Console.WriteLine("X' " + prevMousePosition.X);
+
+            var test = _mousePosition.X - prevMousePosition.X;
+            if (test >= 100)
+                Console.WriteLine("LEFT");
+            else if (test <= -100)
+                Console.WriteLine("RIGHT");
+            else
+                Console.WriteLine("NONE");
+
+            //MouseAction(null, new EventArgs());
 
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
         }

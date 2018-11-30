@@ -69,6 +69,7 @@
     <Compile Include="Utils\DependencyInjectionUtil.cs" />
     <Compile Include="Utils\Dispatcher.cs" />
     <Compile Include="Utils\Enums\MouseMessages.cs" />
+    <Compile Include="Utils\Enums\MouseMoves.cs" />
     <Compile Include="Utils\Interfaces\IDispatcher.cs" />
     <Compile Include="Utils\MouseUtil.cs" />
     <Compile Include="Utils\Structures\MSLLHook.cs" />
