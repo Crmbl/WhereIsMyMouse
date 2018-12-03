@@ -9,7 +9,8 @@
         MouseEnter="WindowMouseEnter"
         MouseLeave="WindowMouseLeave"
         MouseUp="WindowMouseUp"
-        MouseDoubleClick="WindowMouseDouble">
+        MouseDoubleClick="WindowMouseDouble"
+        Closed="OnClosed">
     <Window.Background>
         <ImageBrush ImageSource="{StaticResource Background}" />
     </Window.Background>

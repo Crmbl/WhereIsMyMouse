@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
-using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Input;
 using WhereIsMyMouse.Utils.Enums;
 using WhereIsMyMouse.Utils.Structures;
 using Point = WhereIsMyMouse.Utils.Structures.Point;
@@ -31,17 +30,33 @@ namespace WhereIsMyMouse.Utils
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 
+        [DllImport("user32.dll")]
+        private static extern bool SetSystemCursor(IntPtr hcur, uint id);
+
+        [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
+        public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, String pvParam, uint fWinIni);
+
+        [DllImport("user32.dll")]
+        static extern IntPtr LoadCursorFromFile(string lpFileName);
+
         #endregion //P/Invoke
 
         #region Constants
 
+        //Mouse handle
         private const int WH_MOUSE_LL = 14;
+        
+        //Value to update cursor
+        private const int SPI_SETCURSORS = 0x0057;
+
+        //Normal cursor
+        private static uint OCR_NORMAL = 32512;
+
+        private static string CURSOR_NAME = "cursor.cur";
 
         #endregion //Constants
 
         #region Properties
-
-        public static event EventHandler MouseAction = delegate {};
 
         private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
@@ -49,13 +64,15 @@ namespace WhereIsMyMouse.Utils
 
         private static IntPtr _hookId = IntPtr.Zero;
 
+        private static Stopwatch _stopwatch;
+
         private static Timer _timer;
 
         private static Point _mousePosition;
 
-        private static bool _isFirstMove;
-
         private static List<MouseMoves> _mouseMoves;
+
+        public static MainWindow MainWindow { get; set; }
 
         #endregion //Properties
 
@@ -67,8 +84,8 @@ namespace WhereIsMyMouse.Utils
         public static void Start()
         {
             _mouseMoves = new List<MouseMoves>();
-            _isFirstMove = true;
-            _timer = new Timer { Interval = 350 };
+            _stopwatch = new Stopwatch();
+            _timer = new Timer {Interval = 1500};
             _timer.Tick += TimerOnTick;
 
             using (Process curProcess = Process.GetCurrentProcess())
@@ -79,11 +96,22 @@ namespace WhereIsMyMouse.Utils
         }
 
         /// <summary>
+        /// Handle timer event.
+        /// </summary>
+        private static void TimerOnTick(object sender, EventArgs e)
+        {
+            SystemParametersInfo(SPI_SETCURSORS, 0, null, 0);
+            _timer.Stop();
+        }
+
+        /// <summary>
         /// Stop the mouse hook.
         /// </summary>
         public static void Stop()
         {
             UnhookWindowsHookEx(_hookId);
+            SystemParametersInfo(SPI_SETCURSORS, 0, null, 0);
+            _timer.Tick -= TimerOnTick;
         }
 
         /// <summary>
@@ -91,54 +119,49 @@ namespace WhereIsMyMouse.Utils
         /// </summary>
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode < 0 || (MouseMessages) wParam != MouseMessages.WM_MOUSEMOVE || !_isFirstMove)
+            if (nCode < 0 || (MouseMessages) wParam != MouseMessages.WM_MOUSEMOVE)
                 return CallNextHookEx(_hookId, nCode, wParam, lParam);
 
-            _isFirstMove = false;
-            //Console.WriteLine("Hook");
+            if (_mousePosition.X != default(int) && _mousePosition.Y != default(int))
+            {
+                var delta = ((MSLLHook)Marshal.PtrToStructure(lParam, typeof(MSLLHook))).Point.X - _mousePosition.X;
+                if (delta > 0)
+                {
+                    if (!_mouseMoves.Any() || _mouseMoves.Last() != MouseMoves.RIGHT)
+                        _mouseMoves.Add(MouseMoves.RIGHT);
+                }
+                else if (delta < 0)
+                {
+                    if (!_mouseMoves.Any() || _mouseMoves.Last() != MouseMoves.LEFT)
+                        _mouseMoves.Add(MouseMoves.LEFT);
+                }
 
-            _timer.Stop();
-            _timer.Start();
+                if (_mouseMoves.Count == 1)
+                    _stopwatch.Restart();
+            }
 
-            var prevMousePosition = new Point();
-            if (!_mousePosition.Equals(new Point()))
-                prevMousePosition = _mousePosition;
-
-            //var prevMousePosition = _mousePosition;
             _mousePosition = ((MSLLHook)Marshal.PtrToStructure(lParam, typeof(MSLLHook))).Point;
 
-            Console.WriteLine("///////////////////////////////////////");
-            Console.WriteLine("X " + _mousePosition.X);
-            //Console.WriteLine("X' " + prevMousePosition.X);
-
-            var test = _mousePosition.X - prevMousePosition.X;
-            if (test >= 100)
-                Console.WriteLine("LEFT");
-            else if (test <= -100)
-                Console.WriteLine("RIGHT");
-            else
-                Console.WriteLine("NONE");
-
-            //MouseAction(null, new EventArgs());
+            if (_mouseMoves.Count == 10)
+                GrowMouse();
 
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
 
         /// <summary>
-        /// Handle the idle mouse event.
+        /// Change the size of the mouse cursor.
         /// </summary>
-        private static void TimerOnTick(object sender, EventArgs eventArgs)
+        public static void GrowMouse()
         {
-            _timer.Stop();
-            _isFirstMove = true;
-            _timer.Start();
+            if (_stopwatch.ElapsedMilliseconds <= 1200)
+            {
+                SetSystemCursor(LoadCursorFromFile(string.Concat(Environment.CurrentDirectory, "\\", CURSOR_NAME)), OCR_NORMAL);
+                _timer.Start();
+            }
+
+            _mouseMoves.Clear();
         }
 
         #endregion //Methods
-
-        public static void DoStuff()
-        {
-            //Console.WriteLine("TEST");
-        }
     }
 }

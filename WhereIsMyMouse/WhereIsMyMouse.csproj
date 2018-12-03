@@ -70,7 +70,9 @@
     <Compile Include="Utils\Dispatcher.cs" />
     <Compile Include="Utils\Enums\MouseMessages.cs" />
     <Compile Include="Utils\Enums\MouseMoves.cs" />
+    <Compile Include="Utils\Enums\SPIF.cs" />
     <Compile Include="Utils\Interfaces\IDispatcher.cs" />
+    <Compile Include="Utils\KeyUtil.cs" />
     <Compile Include="Utils\MouseUtil.cs" />
     <Compile Include="Utils\Structures\MSLLHook.cs" />
     <Compile Include="Utils\Structures\Point.cs" />
@@ -115,7 +117,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\Images\cursor.cur">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\background.png" />
     <Resource Include="Resources\Images\icon.ico" />

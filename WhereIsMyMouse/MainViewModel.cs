@@ -144,7 +144,6 @@ namespace WhereIsMyMouse
             ToggleEnableLabel = "Disable";
             ExitCommand = new ActionCommand(KillApp);
             ToggleEnableCommand = new ActionCommand(ToggleEnableMethod);
-            //MouseUtil.MouseAction += MovingMouse;
         }
 
         #endregion //Constructors
@@ -165,16 +164,7 @@ namespace WhereIsMyMouse
         /// </summary>
         public void KillApp()
         {
-            MouseUtil.Stop();
             System.Windows.Application.Current.Shutdown();
-        }
-
-        /// <summary>
-        /// Handle the mouse moving event.
-        /// </summary>
-        private void MovingMouse(object sender, System.EventArgs e)
-        {
-            MouseUtil.DoStuff();
         }
 
         #endregion //Methods

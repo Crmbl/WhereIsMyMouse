@@ -1,8 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Interop;
+using WhereIsMyMouse.Utils;
 using Cursors = System.Windows.Input.Cursors;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 
@@ -124,6 +127,32 @@ namespace WhereIsMyMouse
                 WindowState = WindowState.Minimized;
                 SetNotifyIconMenuItems();
             }
+        }
+
+        /// <summary>
+        /// Event raised on source initialized.
+        /// </summary>
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+
+            var helper = new WindowInteropHelper(this);
+            KeyUtil.Source = HwndSource.FromHwnd(helper.Handle);
+            KeyUtil.Source?.AddHook(KeyUtil.HwndHook);
+            KeyUtil.ViewModel = ViewModel;
+            KeyUtil.RegisterKey(this);
+            MouseUtil.MainWindow = this;
+        }
+
+        /// <summary>
+        /// Event raised on closed window.
+        /// </summary>
+        protected void OnClosed(object sender, EventArgs e)
+        {
+            KeyUtil.Source.RemoveHook(KeyUtil.HwndHook);
+            KeyUtil.Source = null;
+            KeyUtil.UnregisterKey(this);
+            MouseUtil.Stop();
         }
 
         #endregion //Events
