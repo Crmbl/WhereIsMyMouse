@@ -141,7 +141,6 @@ namespace WhereIsMyMouse
             KeyUtil.Source?.AddHook(KeyUtil.HwndHook);
             KeyUtil.ViewModel = ViewModel;
             KeyUtil.RegisterKey(this);
-            MouseUtil.MainWindow = this;
         }
 
         /// <summary>

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Windows.Media.Imaging;
 using WhereIsMyMouse.Utils.Enums;
 using WhereIsMyMouse.Utils.Structures;
 using Point = WhereIsMyMouse.Utils.Structures.Point;
@@ -36,8 +38,8 @@ namespace WhereIsMyMouse.Utils
         [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
         public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, String pvParam, uint fWinIni);
 
-        [DllImport("user32.dll")]
-        static extern IntPtr LoadCursorFromFile(string lpFileName);
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern IntPtr LoadImage(IntPtr hinst, string lpszName, uint uType, int cxDesired, int cyDesired, uint fuLoad);
 
         #endregion //P/Invoke
 
@@ -49,10 +51,15 @@ namespace WhereIsMyMouse.Utils
         //Value to update cursor
         private const int SPI_SETCURSORS = 0x0057;
 
-        //Normal cursor
-        private static uint OCR_NORMAL = 32512;
+        private const uint IMAGE_BITMAP = 0;
 
-        private static string CURSOR_NAME = "cursor.cur";
+        private const uint IMAGE_ICON = 1;
+
+        private const uint LR_LOADFROMFILE = 0x00000010;
+
+        private const uint LR_DEFAULTCOLOR = 0x00000000;
+
+        private static string CURSOR_NAME = "cursor.ico";//"cursor.png";
 
         #endregion //Constants
 
@@ -72,7 +79,7 @@ namespace WhereIsMyMouse.Utils
 
         private static List<MouseMoves> _mouseMoves;
 
-        public static MainWindow MainWindow { get; set; }
+        private static Bitmap _updatedCursor;
 
         #endregion //Properties
 
@@ -87,6 +94,21 @@ namespace WhereIsMyMouse.Utils
             _stopwatch = new Stopwatch();
             _timer = new Timer {Interval = 1500};
             _timer.Tick += TimerOnTick;
+
+            var cursorPath = string.Concat(Environment.CurrentDirectory, @"\Resources\Images\", CURSOR_NAME);
+            var y = new Bitmap(cursorPath);
+
+            //Bitmap intermediateBitmap = new Bitmap(32, 32);
+            //Graphics intermediateGraphics = Graphics.FromImage(intermediateBitmap);
+            //intermediateGraphics.DrawImage(y, intermediateBitmap.Width / 2 - y.Width / 2, intermediateBitmap.Height / 2 - y.Height / 2);
+
+            var tmpBitmap = new Bitmap(256, 256);
+            Graphics finalGraphics = Graphics.FromImage(tmpBitmap);
+            //Graphics intermediateGraphics = Graphics.FromImage(y);
+            //intermediateGraphics.DrawImage();
+            //finalGraphics.ScaleTransform(1000, 1000);
+            finalGraphics.DrawImage(y, 0,/*tmpBitmap.Width / 2 - y.Width / 2, tmpBitmap.Height / 2 - y.Height / 2*/ 0, tmpBitmap.Width, tmpBitmap.Height);
+            _updatedCursor = tmpBitmap;
 
             using (Process curProcess = Process.GetCurrentProcess())
             using (ProcessModule curModule = curProcess.MainModule)
@@ -112,6 +134,7 @@ namespace WhereIsMyMouse.Utils
             UnhookWindowsHookEx(_hookId);
             SystemParametersInfo(SPI_SETCURSORS, 0, null, 0);
             _timer.Tick -= TimerOnTick;
+            _updatedCursor.Dispose();
         }
 
         /// <summary>
@@ -151,11 +174,18 @@ namespace WhereIsMyMouse.Utils
         /// <summary>
         /// Change the size of the mouse cursor.
         /// </summary>
-        public static void GrowMouse()
+        private static void GrowMouse()
         {
             if (_stopwatch.ElapsedMilliseconds <= 1200)
             {
-                SetSystemCursor(LoadCursorFromFile(string.Concat(Environment.CurrentDirectory, "\\", CURSOR_NAME)), OCR_NORMAL);
+                foreach (var cursor in (uint[]) Enum.GetValues(typeof(OCRCursors)))
+                {
+                    //SetSystemCursor(_updatedCursor.GetHicon(), cursor);
+                    var cursorPath = string.Concat(Environment.CurrentDirectory, @"\Resources\Images\", CURSOR_NAME);
+                    var tmp = LoadImage(IntPtr.Zero, cursorPath, IMAGE_ICON, 256, 256, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
+                    SetSystemCursor(tmp, cursor);
+                }
+
                 _timer.Start();
             }
 

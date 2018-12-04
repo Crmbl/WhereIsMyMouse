@@ -70,6 +70,7 @@
     <Compile Include="Utils\Dispatcher.cs" />
     <Compile Include="Utils\Enums\MouseMessages.cs" />
     <Compile Include="Utils\Enums\MouseMoves.cs" />
+    <Compile Include="Utils\Enums\OCRCursors.cs" />
     <Compile Include="Utils\Enums\SPIF.cs" />
     <Compile Include="Utils\Interfaces\IDispatcher.cs" />
     <Compile Include="Utils\KeyUtil.cs" />
@@ -118,13 +119,19 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Images\cursor.cur">
+    <Resource Include="Resources\Images\background.png" />
+    <EmbeddedResource Include="Resources\Images\cursor.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+    </EmbeddedResource>
+    <Resource Include="Resources\Images\icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Images\background.png" />
-    <Resource Include="Resources\Images\icon.ico" />
+    <Resource Include="Resources\Images\circle.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Images\cursor.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

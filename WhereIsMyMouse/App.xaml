@@ -90,6 +90,5 @@
         </Style>
 
         <BitmapImage x:Key="Background" UriSource="/Resources/Images/background.png" />
-        <BitmapImage x:Key="Cursor" UriSource="/Resources/Images/cursor.cur" />
     </Application.Resources>
 </Application>
