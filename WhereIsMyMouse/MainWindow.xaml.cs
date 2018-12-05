@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Forms;
@@ -32,6 +31,9 @@ namespace WhereIsMyMouse
 
         #region Constructors
 
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();

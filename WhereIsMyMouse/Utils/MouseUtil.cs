@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using System.Windows.Media.Imaging;
+using WhereIsMyMouse.Resources;
 using WhereIsMyMouse.Utils.Enums;
 using WhereIsMyMouse.Utils.Structures;
 using Point = WhereIsMyMouse.Utils.Structures.Point;
+// ReSharper disable InconsistentNaming
 
 namespace WhereIsMyMouse.Utils
 {
@@ -19,25 +19,46 @@ namespace WhereIsMyMouse.Utils
     {
         #region P/Invoke
 
+        /// <summary>
+        /// Hook the mouse events.
+        /// </summary>
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
 
+        /// <summary>
+        /// UnHook !
+        /// </summary>
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool UnhookWindowsHookEx(IntPtr hhk);
 
+        /// <summary>
+        /// Needed to forward the hook... something like this.
+        /// </summary>
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
+        /// <summary>
+        /// Get the handle of the program.
+        /// </summary>
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr GetModuleHandle(string lpModuleName);
 
+        /// <summary>
+        /// Overrides the system cursor.
+        /// </summary>
         [DllImport("user32.dll")]
         private static extern bool SetSystemCursor(IntPtr hcur, uint id);
 
+        /// <summary>
+        /// Allows to reset the changed cursor to default.
+        /// </summary>
         [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
-        public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, String pvParam, uint fWinIni);
+        private static extern bool SystemParametersInfo(uint uiAction, uint uiParam, String pvParam, uint fWinIni);
 
+        /// <summary>
+        /// Allows to load an image then push into the SystemCursor.
+        /// </summary>
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         static extern IntPtr LoadImage(IntPtr hinst, string lpszName, uint uType, int cxDesired, int cyDesired, uint fuLoad);
 
@@ -45,41 +66,69 @@ namespace WhereIsMyMouse.Utils
 
         #region Constants
 
-        //Mouse handle
+        //Mouse handle.
         private const int WH_MOUSE_LL = 14;
         
-        //Value to update cursor
+        //Value to update cursor.
         private const int SPI_SETCURSORS = 0x0057;
 
-        private const uint IMAGE_BITMAP = 0;
+        //Number of movements to engage the mouse grow.
+        private const int MOVE_COUNT = 8;
 
-        private const uint IMAGE_ICON = 1;
+        //Treshold before the mouse won't grow, in milliseconds.
+        private const int TRESHOLD_MILLI = 800;
 
-        private const uint LR_LOADFROMFILE = 0x00000010;
-
-        private const uint LR_DEFAULTCOLOR = 0x00000000;
-
-        private static string CURSOR_NAME = "cursor.ico";//"cursor.png";
+        //Treshold before the mouseOverride is hidden, in milliseconds.
+        private const int TRESHOLD_HIDE_MOUSE = 1500;
 
         #endregion //Constants
 
         #region Properties
 
+        /// <summary>
+        /// Delegate to handle mouse events.
+        /// </summary>
         private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
-        private static LowLevelMouseProc _proc = HookCallback;
+        /// <summary>
+        /// Callback for the delegate.
+        /// </summary>
+        private static readonly LowLevelMouseProc Proc = HookCallback;
 
+        /// <summary>
+        /// Defines the hook id. Self explanatory.
+        /// </summary>
         private static IntPtr _hookId = IntPtr.Zero;
 
+        /// <summary>
+        /// Defines the "timer" for the whole feature.
+        /// </summary>
         private static Stopwatch _stopwatch;
 
+        /// <summary>
+        /// Defines a limit of time after which the mouse is reset.
+        /// </summary>
         private static Timer _timer;
 
+        /// <summary>
+        /// The mouse position at T time.
+        /// </summary>
         private static Point _mousePosition;
 
+        /// <summary>
+        /// The list of moves to check on.
+        /// </summary>
         private static List<MouseMoves> _mouseMoves;
 
-        private static Bitmap _updatedCursor;
+        /// <summary>
+        /// The Window mouseOverride to place on top of the real cursor.
+        /// </summary>
+        private static MouseOverride _mouse;
+
+        /// <summary>
+        /// Path for the blank cursor.
+        /// </summary>
+        private static string _dummyMousePath;
 
         #endregion //Properties
 
@@ -92,28 +141,15 @@ namespace WhereIsMyMouse.Utils
         {
             _mouseMoves = new List<MouseMoves>();
             _stopwatch = new Stopwatch();
-            _timer = new Timer {Interval = 1500};
+            _timer = new Timer {Interval = TRESHOLD_HIDE_MOUSE};
             _timer.Tick += TimerOnTick;
+            _mouse = new MouseOverride {ShowInTaskbar = false};
+            _dummyMousePath = string.Concat(Environment.CurrentDirectory, @"\Resources\Images\blank.cur");
 
-            var cursorPath = string.Concat(Environment.CurrentDirectory, @"\Resources\Images\", CURSOR_NAME);
-            var y = new Bitmap(cursorPath);
-
-            //Bitmap intermediateBitmap = new Bitmap(32, 32);
-            //Graphics intermediateGraphics = Graphics.FromImage(intermediateBitmap);
-            //intermediateGraphics.DrawImage(y, intermediateBitmap.Width / 2 - y.Width / 2, intermediateBitmap.Height / 2 - y.Height / 2);
-
-            var tmpBitmap = new Bitmap(256, 256);
-            Graphics finalGraphics = Graphics.FromImage(tmpBitmap);
-            //Graphics intermediateGraphics = Graphics.FromImage(y);
-            //intermediateGraphics.DrawImage();
-            //finalGraphics.ScaleTransform(1000, 1000);
-            finalGraphics.DrawImage(y, 0,/*tmpBitmap.Width / 2 - y.Width / 2, tmpBitmap.Height / 2 - y.Height / 2*/ 0, tmpBitmap.Width, tmpBitmap.Height);
-            _updatedCursor = tmpBitmap;
-
-            using (Process curProcess = Process.GetCurrentProcess())
-            using (ProcessModule curModule = curProcess.MainModule)
+            using (var curProcess = Process.GetCurrentProcess())
+            using (var curModule = curProcess.MainModule)
             {
-                _hookId = SetWindowsHookEx(WH_MOUSE_LL, _proc, GetModuleHandle(curModule.ModuleName), 0);
+                _hookId = SetWindowsHookEx(WH_MOUSE_LL, Proc, GetModuleHandle(curModule.ModuleName), 0);
             }
         }
 
@@ -122,6 +158,7 @@ namespace WhereIsMyMouse.Utils
         /// </summary>
         private static void TimerOnTick(object sender, EventArgs e)
         {
+            _mouse.Hide();
             SystemParametersInfo(SPI_SETCURSORS, 0, null, 0);
             _timer.Stop();
         }
@@ -132,9 +169,10 @@ namespace WhereIsMyMouse.Utils
         public static void Stop()
         {
             UnhookWindowsHookEx(_hookId);
+
+            _mouse.Hide();
             SystemParametersInfo(SPI_SETCURSORS, 0, null, 0);
             _timer.Tick -= TimerOnTick;
-            _updatedCursor.Dispose();
         }
 
         /// <summary>
@@ -142,9 +180,11 @@ namespace WhereIsMyMouse.Utils
         /// </summary>
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
+            //If event is NOT mouseMove, forward the hook
             if (nCode < 0 || (MouseMessages) wParam != MouseMessages.WM_MOUSEMOVE)
                 return CallNextHookEx(_hookId, nCode, wParam, lParam);
 
+            //Handle the movement direction and the _mouseMoves list
             if (_mousePosition.X != default(int) && _mousePosition.Y != default(int))
             {
                 var delta = ((MSLLHook)Marshal.PtrToStructure(lParam, typeof(MSLLHook))).Point.X - _mousePosition.X;
@@ -165,26 +205,33 @@ namespace WhereIsMyMouse.Utils
 
             _mousePosition = ((MSLLHook)Marshal.PtrToStructure(lParam, typeof(MSLLHook))).Point;
 
-            if (_mouseMoves.Count == 10)
+            //Checks if the mouseOverride is visible and adapt its position.
+            if (_mouse.IsVisible)
+            {
+                _mouse.Left = _mousePosition.X - _mouse.ActualWidth / 2;
+                _mouse.Top = _mousePosition.Y - _mouse.ActualHeight / 2;
+            }
+
+            if (_mouseMoves.Count == MOVE_COUNT)
                 GrowMouse();
 
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
 
         /// <summary>
-        /// Change the size of the mouse cursor.
+        /// Apply mouseOverride on top of real cursor, which is set to blank.cur.
         /// </summary>
         private static void GrowMouse()
         {
-            if (_stopwatch.ElapsedMilliseconds <= 1200)
+            if (_stopwatch.ElapsedMilliseconds <= TRESHOLD_MILLI)
             {
+                _mouse.Show();
+                _mouse.Activate();
+                _mouse.Left = _mousePosition.X - _mouse.ActualWidth / 2;
+                _mouse.Top = _mousePosition.Y - _mouse.ActualHeight / 2;
+
                 foreach (var cursor in (uint[]) Enum.GetValues(typeof(OCRCursors)))
-                {
-                    //SetSystemCursor(_updatedCursor.GetHicon(), cursor);
-                    var cursorPath = string.Concat(Environment.CurrentDirectory, @"\Resources\Images\", CURSOR_NAME);
-                    var tmp = LoadImage(IntPtr.Zero, cursorPath, IMAGE_ICON, 256, 256, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
-                    SetSystemCursor(tmp, cursor);
-                }
+                    SetSystemCursor(LoadImage(IntPtr.Zero, _dummyMousePath, 2, 1, 1, 0x00000010), cursor);
 
                 _timer.Start();
             }

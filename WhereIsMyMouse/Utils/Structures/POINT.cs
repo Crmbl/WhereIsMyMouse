@@ -2,6 +2,9 @@
 
 namespace WhereIsMyMouse.Utils.Structures
 {
+    /// <summary>
+    /// A simple Point, with its coordinates.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct Point
     {

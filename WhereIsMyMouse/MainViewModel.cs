@@ -44,7 +44,7 @@ namespace WhereIsMyMouse
         private string _toggleEnableLabel;
 
         /// <summary>
-        /// Private vor for IsEnabled.
+        /// Private var for IsEnabled.
         /// </summary>
         private bool _isEnabled;
 

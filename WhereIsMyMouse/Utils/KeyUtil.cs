@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
+// ReSharper disable InconsistentNaming
 
 namespace WhereIsMyMouse.Utils
 {
@@ -8,15 +9,24 @@ namespace WhereIsMyMouse.Utils
     {
         #region Constants
 
+        /// <summary>
+        /// Simple id for the hotkey.
+        /// </summary>
         private const int HOTKEY = 9010;
 
         #endregion //Constants
 
         #region P/Invoke
 
+        /// <summary>
+        /// Allows to register system wide hotkey.
+        /// </summary>
         [DllImport("User32.dll")]
         private static extern bool RegisterHotKey([In] IntPtr hWnd, [In] int id, [In] uint fsModifiers, [In] uint vk);
 
+        /// <summary>
+        /// Unregisters the system wide hotkey.
+        /// </summary>
         [DllImport("User32.dll")]
         private static extern bool UnregisterHotKey([In] IntPtr hWnd, [In] int id);
 

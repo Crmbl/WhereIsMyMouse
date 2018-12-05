@@ -1,5 +1,9 @@
-﻿namespace WhereIsMyMouse.Utils.Enums
+﻿// ReSharper disable InconsistentNaming
+namespace WhereIsMyMouse.Utils.Enums
 {
+    /// <summary>
+    /// Defines all the system wide value for the cursor.
+    /// </summary>
     public enum OCRCursors : uint
     {
         /// <summary>

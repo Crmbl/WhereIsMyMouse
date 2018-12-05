@@ -16,6 +16,9 @@ namespace WhereIsMyMouse
             RegisterInstance();
         }
 
+        /// <summary>
+        /// "Init" the dispatcher.
+        /// </summary>
         private static void RegisterInstance()
         {
             DependencyInjectionUtil.RegisterInstance<IDispatcher>(new Dispatcher(Thread.CurrentThread));

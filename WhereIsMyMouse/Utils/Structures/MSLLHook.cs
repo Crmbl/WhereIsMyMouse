@@ -1,15 +1,14 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+// ReSharper disable InconsistentNaming
 
 namespace WhereIsMyMouse.Utils.Structures
 {
+    /// <summary>
+    /// Defines the MSLLHook structure.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct MSLLHook
     {
         public Point Point;
-        public uint MouseData;
-        public uint Flags;
-        public uint Time;
-        public IntPtr DwExtraInfo;
     }
 }

@@ -1,5 +1,9 @@
-﻿namespace WhereIsMyMouse.Utils.Enums
+﻿// ReSharper disable InconsistentNaming
+namespace WhereIsMyMouse.Utils.Enums
 {
+    /// <summary>
+    /// Enum for system wide mouse events.
+    /// </summary>
     public enum MouseMessages
     {
         WM_LBUTTONDOWN = 0x0201,
