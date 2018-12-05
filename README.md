@@ -1,5 +1,6 @@
 # WhereIsMyMouse
-Make your mouse bigger to see where it is on mouse movement. Apple style
 
+Make your mouse bigger to see where it is when you move your mouse from left to right 10 times.
+> MacIntosh style !
 
-// WORK IN PROGRESS
+![screenshot whereIsMyMouse](https://raw.github.com/Crmbl/WhereIsMyMouse/master/screenshot.PNG)
