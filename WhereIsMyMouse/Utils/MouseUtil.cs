@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using WhereIsMyMouse.Resources;
 using WhereIsMyMouse.Utils.Enums;
 using WhereIsMyMouse.Utils.Structures;
@@ -73,13 +76,13 @@ namespace WhereIsMyMouse.Utils
         private const int SPI_SETCURSORS = 0x0057;
 
         //Number of movements to engage the mouse grow.
-        private const int MOVE_COUNT = 8;
+        private static readonly int MOVE_COUNT = int.Parse(ConfigurationManager.AppSettings["MOVE_COUNT"]);
 
         //Treshold before the mouse won't grow, in milliseconds.
-        private const int TRESHOLD_MILLI = 800;
+        private static readonly int TRESHOLD_MILLI = int.Parse(ConfigurationManager.AppSettings["TRESHOLD_MILLI"]);
 
         //Treshold before the mouseOverride is hidden, in milliseconds.
-        private const int TRESHOLD_HIDE_MOUSE = 1500;
+        private static readonly int TRESHOLD_HIDE_MOUSE = int.Parse(ConfigurationManager.AppSettings["TRESHOLD_HIDE_MOUSE"]);
 
         #endregion //Constants
 
@@ -143,7 +146,14 @@ namespace WhereIsMyMouse.Utils
             _stopwatch = new Stopwatch();
             _timer = new Timer {Interval = TRESHOLD_HIDE_MOUSE};
             _timer.Tick += TimerOnTick;
-            _mouse = new MouseOverride {ShowInTaskbar = false};
+            _mouse = new MouseOverride
+            {
+                ShowInTaskbar = false,
+                Height = int.Parse(ConfigurationManager.AppSettings["MOUSE_SIZE"]),
+                Width = int.Parse(ConfigurationManager.AppSettings["MOUSE_SIZE"]),
+                Topmost = true,
+                Background = new ImageBrush(new BitmapImage(new Uri(string.Concat(Environment.CurrentDirectory, @"\Resources\Images\cursor.png"))))
+            };
             _dummyMousePath = string.Concat(Environment.CurrentDirectory, @"\Resources\Images\blank.cur");
 
             using (var curProcess = Process.GetCurrentProcess())

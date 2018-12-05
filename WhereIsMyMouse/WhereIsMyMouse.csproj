@@ -39,6 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Globalization" />
@@ -129,7 +130,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\background.png" />
-    <Resource Include="Resources\Images\cursor.png" />
+    <EmbeddedResource Include="Resources\Images\cursor.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <Resource Include="Resources\Images\icon.ico" />
   </ItemGroup>
   <ItemGroup>
