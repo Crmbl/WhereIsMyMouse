@@ -83,7 +83,7 @@ namespace WhereIsMyMouse.Utils
                     switch (wParam.ToInt32())
                     {
                         case HOTKEY:
-                            ViewModel.IsEnabled = !ViewModel.IsEnabled;
+                            ViewModel.ToggleEnableMethod();
                             handled = true;
                             break;
                     }
