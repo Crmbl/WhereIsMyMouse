@@ -135,11 +135,12 @@ namespace WhereIsMyMouse
         {
             AppTitle = "Where's my Mouse!";
             #if DEBUG
-            Version = "1.0d";
+            Version = "2.0d";
             #else
-			Version = "1.0r";
+			Version = "2.0r";
             #endif
 
+            MouseUtil.Init();
             IsEnabled = true;
             ToggleEnableLabel = "Disable";
             ExitCommand = new ActionCommand(KillApp);

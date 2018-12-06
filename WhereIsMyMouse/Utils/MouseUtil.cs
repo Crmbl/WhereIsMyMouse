@@ -133,21 +133,43 @@ namespace WhereIsMyMouse.Utils
         /// </summary>
         private static string _dummyMousePath;
 
+        /// <summary>
+        /// The "length" of all screen combined.
+        /// </summary>
+        private static double _maxLength;
+
+        /// <summary>
+        /// Defines if the <see cref="MouseUtil"/> class have been init().
+        /// </summary>
+        private static bool _initDone;
+
         #endregion //Properties
 
         #region Methods
+
+        /// <summary>
+        /// Init all the variables.
+        /// </summary>
+        public static void Init()
+        {
+            _mouseMoves = new List<MouseMoves>();
+            _stopwatch = new Stopwatch();
+            _timer = new Timer { Interval = TRESHOLD_HIDE_MOUSE };
+            _mouse = new MouseOverride();
+            _maxLength = Screen.AllScreens.Select(x => x.Bounds.Width).Sum();
+            _dummyMousePath = string.Concat(Environment.CurrentDirectory, @"\Resources\Images\blank.cur");
+            _initDone = true;
+        }
 
         /// <summary>
         /// Start the mouse hook.
         /// </summary>
         public static void Start()
         {
-            _mouseMoves = new List<MouseMoves>();
-            _stopwatch = new Stopwatch();
-            _timer = new Timer {Interval = TRESHOLD_HIDE_MOUSE};
+            if (!_initDone)
+                throw new Exception($"Init method has not been called : Init = {_initDone}.");
+
             _timer.Tick += TimerOnTick;
-            _mouse = new MouseOverride();
-            _dummyMousePath = string.Concat(Environment.CurrentDirectory, @"\Resources\Images\blank.cur");
             AnimationUtil.StoryboardScaleUp.Completed += StoryboardScaleUpOnCompleted;
             AnimationUtil.StoryboardScaleDown.Completed += StoryboardScaleDownOnCompleted;
 
@@ -208,7 +230,7 @@ namespace WhereIsMyMouse.Utils
                 return CallNextHookEx(_hookId, nCode, wParam, lParam);
 
             //Handle the movement direction and the _mouseMoves list
-            if (_mousePosition.X != default(int) && _mousePosition.Y != default(int))
+            if (_mousePosition.X >= default(int) && _mousePosition.X < _maxLength && _mousePosition.Y != default(int))
             {
                 var delta = ((MSLLHook)Marshal.PtrToStructure(lParam, typeof(MSLLHook))).Point.X - _mousePosition.X;
                 if (delta > 0)
