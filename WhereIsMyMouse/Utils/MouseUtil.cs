@@ -4,9 +4,9 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using WhereIsMyMouse.Resources;
 using WhereIsMyMouse.Utils.Enums;
 using WhereIsMyMouse.Utils.Structures;
@@ -146,15 +146,10 @@ namespace WhereIsMyMouse.Utils
             _stopwatch = new Stopwatch();
             _timer = new Timer {Interval = TRESHOLD_HIDE_MOUSE};
             _timer.Tick += TimerOnTick;
-            _mouse = new MouseOverride
-            {
-                ShowInTaskbar = false,
-                Height = int.Parse(ConfigurationManager.AppSettings["MOUSE_SIZE"]),
-                Width = int.Parse(ConfigurationManager.AppSettings["MOUSE_SIZE"]),
-                Topmost = true,
-                Background = new ImageBrush(new BitmapImage(new Uri(string.Concat(Environment.CurrentDirectory, @"\Resources\Images\cursor.png"))))
-            };
+            _mouse = new MouseOverride();
             _dummyMousePath = string.Concat(Environment.CurrentDirectory, @"\Resources\Images\blank.cur");
+            AnimationUtil.StoryboardScaleUp.Completed += StoryboardScaleUpOnCompleted;
+            AnimationUtil.StoryboardScaleDown.Completed += StoryboardScaleDownOnCompleted;
 
             using (var curProcess = Process.GetCurrentProcess())
             using (var curModule = curProcess.MainModule)
@@ -163,14 +158,31 @@ namespace WhereIsMyMouse.Utils
             }
         }
 
+        private static void StoryboardScaleUpOnCompleted(object sender, EventArgs eventArgs)
+        {
+            if (!(_mouse.FindName("MouseImage") is Image image)) return;
+            if (!(image.FindName("ScaleTransform") is ScaleTransform scaleTransform)) return;
+
+            scaleTransform.ScaleX = 1;
+        }
+
+        private static void StoryboardScaleDownOnCompleted(object sender, EventArgs eventArgs)
+        {
+            if (!(_mouse.FindName("MouseImage") is Image image)) return;
+            if (!(image.FindName("ScaleTransform") is ScaleTransform scaleTransform)) return;
+
+            scaleTransform.ScaleX = 0;
+            _mouse.Hide();
+            SystemParametersInfo(SPI_SETCURSORS, 0, null, 0);
+            _timer.Stop();
+        }
+
         /// <summary>
         /// Handle timer event.
         /// </summary>
         private static void TimerOnTick(object sender, EventArgs e)
         {
-            _mouse.Hide();
-            SystemParametersInfo(SPI_SETCURSORS, 0, null, 0);
-            _timer.Stop();
+            AnimationUtil.ScaleDown(_mouse);
         }
 
         /// <summary>
@@ -239,6 +251,7 @@ namespace WhereIsMyMouse.Utils
                 _mouse.Activate();
                 _mouse.Left = _mousePosition.X - _mouse.ActualWidth / 2;
                 _mouse.Top = _mousePosition.Y - _mouse.ActualHeight / 2;
+                AnimationUtil.ScaleUp(_mouse);
 
                 foreach (var cursor in (uint[]) Enum.GetValues(typeof(OCRCursors)))
                     SetSystemCursor(LoadImage(IntPtr.Zero, _dummyMousePath, 2, 1, 1, 0x00000010), cursor);

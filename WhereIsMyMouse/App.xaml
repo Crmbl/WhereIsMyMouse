@@ -15,6 +15,7 @@
         <Style x:Key="MouseCursorStyle" TargetType="Window">
             <Setter Property="WindowStyle" Value="None" />
             <Setter Property="Title" Value="MouseCursor" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="ResizeMode" Value="CanMinimize" />
             <Setter Property="AllowsTransparency" Value="True" />
         </Style>

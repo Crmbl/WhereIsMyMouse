@@ -5,4 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Style="{StaticResource MouseCursorStyle}">
+    <Image x:Name="MouseImage" 
+           RenderTransformOrigin="0.5, 0.5">
+        <Image.RenderTransform>
+            <ScaleTransform x:Name="ScaleTransform" ScaleY="{Binding RelativeSource={RelativeSource Self}, Path=ScaleX}" />
+        </Image.RenderTransform>
+    </Image>
 </Window>

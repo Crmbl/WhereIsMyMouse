@@ -58,7 +58,7 @@ namespace WhereIsMyMouse.Utils
             const uint MOD_CTRL = 0;
             if (!RegisterHotKey(helper.Handle, HOTKEY, MOD_CTRL, VK_KEY))
             {
-                throw new Exception($"Error with binding to ² [{VK_KEY}]");
+                //throw new Exception($"Error with binding to ² [{VK_KEY}]");
             }
         }
 

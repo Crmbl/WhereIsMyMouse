@@ -1,27 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Configuration;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace WhereIsMyMouse.Resources
 {
     /// <summary>
     /// Interaction logic for MouseOverride.xaml
     /// </summary>
-    public partial class MouseOverride : Window
+    public sealed partial class MouseOverride : Window
     {
         public MouseOverride()
         {
             InitializeComponent();
+
+            BitmapImage bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = new Uri(string.Concat(Environment.CurrentDirectory, @"\Resources\Images\cursor.png"));
+            bitmap.EndInit();
+            MouseImage.Source = bitmap;
+            ScaleTransform.ScaleX = 0;
+
+            ShowInTaskbar = false;
+            Height = int.Parse(ConfigurationManager.AppSettings["MOUSE_SIZE"]);
+            Width = int.Parse(ConfigurationManager.AppSettings["MOUSE_SIZE"]);
+            Topmost = true;
         }
     }
 }

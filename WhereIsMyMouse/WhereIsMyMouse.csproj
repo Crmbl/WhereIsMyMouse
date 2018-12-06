@@ -73,6 +73,7 @@
       <DependentUpon>MouseOverride.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\ActionCommand.cs" />
+    <Compile Include="Utils\AnimationUtil.cs" />
     <Compile Include="Utils\DependencyInjectionUtil.cs" />
     <Compile Include="Utils\Dispatcher.cs" />
     <Compile Include="Utils\Enums\MouseMessages.cs" />
@@ -126,7 +127,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Images\background.png" />
