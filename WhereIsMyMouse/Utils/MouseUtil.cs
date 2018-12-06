@@ -175,6 +175,7 @@ namespace WhereIsMyMouse.Utils
             _mouse.Hide();
             SystemParametersInfo(SPI_SETCURSORS, 0, null, 0);
             _timer.Stop();
+            _mouseMoves.Clear();
         }
 
         /// <summary>
@@ -233,9 +234,11 @@ namespace WhereIsMyMouse.Utils
                 _mouse.Left = _mousePosition.X - _mouse.ActualWidth / 2;
                 _mouse.Top = _mousePosition.Y - _mouse.ActualHeight / 2;
             }
-
-            if (_mouseMoves.Count == MOVE_COUNT)
-                GrowMouse();
+            else
+            {
+                if (_mouseMoves.Count == MOVE_COUNT)
+                    GrowMouse();
+            }
 
             return CallNextHookEx(_hookId, nCode, wParam, lParam);
         }
