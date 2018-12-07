@@ -137,11 +137,6 @@ namespace WhereIsMyMouse.Utils
         private static string _dummyMousePath;
 
         /// <summary>
-        /// The "length" of all screen combined.
-        /// </summary>
-        private static double _maxLength;
-
-        /// <summary>
         /// Defines if the <see cref="MouseUtil"/> class have been init().
         /// </summary>
         private static bool _initDone;
@@ -159,7 +154,6 @@ namespace WhereIsMyMouse.Utils
             _stopwatch = new Stopwatch();
             _timer = new Timer { Interval = TRESHOLD_HIDE_MOUSE };
             _mouse = new MouseOverride();
-            _maxLength = Screen.AllScreens.Select(x => x.Bounds.Width).Sum();
             _dummyMousePath = string.Concat(Environment.CurrentDirectory, @"\Resources\Images\blank.cur");
             _initDone = true;
         }
@@ -183,6 +177,9 @@ namespace WhereIsMyMouse.Utils
             }
         }
 
+        /// <summary>
+        /// When scaleUp event is completed.
+        /// </summary>
         private static void StoryboardScaleUpOnCompleted(object sender, EventArgs eventArgs)
         {
             if (!(_mouse.FindName("MouseImage") is Image image)) return;
@@ -191,6 +188,9 @@ namespace WhereIsMyMouse.Utils
             scaleTransform.ScaleX = 1;
         }
 
+        /// <summary>
+        /// When scaleDown event is completed.
+        /// </summary>
         private static void StoryboardScaleDownOnCompleted(object sender, EventArgs eventArgs)
         {
             if (!(_mouse.FindName("MouseImage") is Image image)) return;
@@ -232,26 +232,12 @@ namespace WhereIsMyMouse.Utils
             if (nCode < 0 || (MouseMessages)wParam != MouseMessages.WM_MOUSEMOVE)
                 return CallNextHookEx(_hookId, nCode, wParam, lParam);
 
-            #region Checks if position OK
-
-            var checker = false;
             var currentScreen = Screen.FromPoint(new System.Drawing.Point(_mousePosition.X, _mousePosition.Y));
-            if (!currentScreen.Primary)
-            {
-                if (_mousePosition.X > 0)
-                    checker = _mousePosition.X > currentScreen.Bounds.X + STICKY_CORNER && _mousePosition.X < _maxLength - STICKY_CORNER;
-                else if (_mousePosition.X < 0)
-                    checker = _mousePosition.X > -currentScreen.Bounds.Width + STICKY_CORNER && _mousePosition.X < currentScreen.Bounds.Width - STICKY_CORNER;
-            }
-            else
-                checker = _mousePosition.X > currentScreen.Bounds.X + STICKY_CORNER && _mousePosition.X < currentScreen.Bounds.Width - STICKY_CORNER;
-
-            checker = checker && _mousePosition.Y != default(int) && _mousePosition.Y > STICKY_CORNER && _mousePosition.Y < currentScreen.Bounds.Height - STICKY_CORNER;
-
-            #endregion //Checks if good to go
+            var isValid = _mousePosition.X > currentScreen.Bounds.X + STICKY_CORNER && _mousePosition.X < currentScreen.Bounds.Width - STICKY_CORNER
+                && _mousePosition.Y != default(int) && _mousePosition.Y > STICKY_CORNER && _mousePosition.Y < currentScreen.Bounds.Height - STICKY_CORNER;
 
             //Handle the movement direction and the _mouseMoves list
-            if (checker)
+            if (isValid)
             {
                 var delta = ((MSLLHook)Marshal.PtrToStructure(lParam, typeof(MSLLHook))).Point.X - _mousePosition.X;
                 if (delta > 0)
