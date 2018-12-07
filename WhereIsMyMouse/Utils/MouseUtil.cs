@@ -84,9 +84,6 @@ namespace WhereIsMyMouse.Utils
         //Treshold before the mouseOverride is hidden, in milliseconds.
         private static readonly int TRESHOLD_HIDE_MOUSE = int.Parse(ConfigurationManager.AppSettings["TRESHOLD_HIDE_MOUSE"]);
 
-        //Windows 10/8 defines a 6 pixels sticky zone, we offset that to avoid weird behavior.
-        private static readonly int STICKY_CORNER = 6;
-
         #endregion //Constants
 
         #region Properties
@@ -232,26 +229,8 @@ namespace WhereIsMyMouse.Utils
             if (nCode < 0 || (MouseMessages) wParam != MouseMessages.WM_MOUSEMOVE)
                 return CallNextHookEx(_hookId, nCode, wParam, lParam);
 
-            #region Checks if position OK
-
-            var checker = false;
-            var currentScreen = Screen.FromPoint(new System.Drawing.Point(_mousePosition.X, _mousePosition.Y));
-            if (!currentScreen.Primary)
-            {
-                if (_mousePosition.X > 0)
-                    checker = _mousePosition.X > currentScreen.Bounds.X + STICKY_CORNER && _mousePosition.X < _maxLength - STICKY_CORNER;
-                else if (_mousePosition.X < 0)
-                    checker = _mousePosition.X > -currentScreen.Bounds.Width + STICKY_CORNER && _mousePosition.X < currentScreen.Bounds.Width - STICKY_CORNER;
-            }
-            else
-                checker = _mousePosition.X > currentScreen.Bounds.X + STICKY_CORNER && _mousePosition.X < currentScreen.Bounds.Width - STICKY_CORNER;
-
-            checker = checker && _mousePosition.Y != default(int) && _mousePosition.Y > STICKY_CORNER && _mousePosition.Y < currentScreen.Bounds.Height - STICKY_CORNER;
-            
-            #endregion //Checks if good to go
-
             //Handle the movement direction and the _mouseMoves list
-            if (checker)
+            if (_mousePosition.X >= default(int) && _mousePosition.X < _maxLength && _mousePosition.Y != default(int))
             {
                 var delta = ((MSLLHook)Marshal.PtrToStructure(lParam, typeof(MSLLHook))).Point.X - _mousePosition.X;
                 if (delta > 0)
