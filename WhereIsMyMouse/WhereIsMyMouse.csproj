@@ -75,6 +75,7 @@
     </Compile>
     <Compile Include="Utils\ActionCommand.cs" />
     <Compile Include="Utils\AnimationUtil.cs" />
+    <Compile Include="Utils\ConsoleUtil.cs" />
     <Compile Include="Utils\DependencyInjectionUtil.cs" />
     <Compile Include="Utils\Dispatcher.cs" />
     <Compile Include="Utils\Enums\MouseMessages.cs" />

@@ -135,9 +135,9 @@ namespace WhereIsMyMouse
         {
             AppTitle = "Where's my Mouse!";
             #if DEBUG
-            Version = "2.0d";
+            Version = "3.0d";
             #else
-			Version = "2.0r";
+			Version = "3.0r";
             #endif
 
             MouseUtil.Init();

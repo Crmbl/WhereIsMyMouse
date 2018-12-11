@@ -233,10 +233,13 @@ namespace WhereIsMyMouse.Utils
                 return CallNextHookEx(_hookId, nCode, wParam, lParam);
 
             var currentScreen = Screen.FromPoint(new System.Drawing.Point(_mousePosition.X, _mousePosition.Y));
-            var offset = currentScreen.Bounds.X;
+            var isValid = _mousePosition.X > currentScreen.Bounds.X + STICKY_CORNER && _mousePosition.X - currentScreen.Bounds.X < currentScreen.Bounds.Width - STICKY_CORNER
+                && _mousePosition.Y != default(int) && _mousePosition.Y - currentScreen.Bounds.Y > STICKY_CORNER && _mousePosition.Y - currentScreen.Bounds.Y < currentScreen.Bounds.Height - STICKY_CORNER;
 
-            var isValid = _mousePosition.X > currentScreen.Bounds.X + STICKY_CORNER && _mousePosition.X - offset < currentScreen.Bounds.Width - STICKY_CORNER
-                && _mousePosition.Y != default(int) && _mousePosition.Y > STICKY_CORNER && _mousePosition.Y < currentScreen.Bounds.Height - STICKY_CORNER;
+            #if DEBUG
+            //Console.WriteLine($"MousePos : {_mousePosition.X} // Offset : {offset} // IsValid : {isValid}");
+            Console.WriteLine(currentScreen.Bounds.Y);
+            #endif 
 
             //Handle the movement direction and the _mouseMoves list
             if (isValid)

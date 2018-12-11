@@ -143,6 +143,10 @@ namespace WhereIsMyMouse
             KeyUtil.Source?.AddHook(KeyUtil.HwndHook);
             KeyUtil.ViewModel = ViewModel;
             KeyUtil.RegisterKey(this);
+
+            #if DEBUG
+            ConsoleUtil.Show();
+            #endif
         }
 
         /// <summary>
@@ -154,6 +158,10 @@ namespace WhereIsMyMouse
             KeyUtil.Source = null;
             KeyUtil.UnregisterKey(this);
             MouseUtil.Stop();
+            
+            #if DEBUG
+            ConsoleUtil.Hide();
+            #endif
         }
 
         #endregion //Events
